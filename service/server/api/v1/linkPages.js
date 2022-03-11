@@ -1,222 +1,75 @@
 const express = require('express');
+const redis = require('redis');
+const { createTitleHash } = require.main.require('./services/titleHash.js');
+const { findShortestPath } = require.main.require('./services/shortestPath.js');
 var router = express.Router();
 
 
 router.post('/', (req,res) => {
   const src = req.body.src;
   const dest = req.body.dest;
-  if (!process.env.DB_SERVER) {
-    // dummy response
-    devDummyResponse(res, src, dest)
-    return;
-  }
 
   if (src && dest) {
-    res.status(200).send({});
+    srcTitleUrl = convertWikiTitleUrl(src);
+    destTitleUrl = convertWikiTitleUrl(dest);
+    checkValidTitle(srcTitleUrl.title, (validSrc) => {
+      checkValidTitle(destTitleUrl.title, (validDest) => {
+        if (validSrc && validDest) {
+          findShortestPath(srcTitleUrl.title, destTitleUrl.title, (titlePath, queryTime) => {
+            const steps = titlePath.length-1;
+            var path = [];
+            for (let i=0; i<titlePath.length; i++) {
+              path.push(convertWikiTitleUrl(titlePath[i]));
+            }
+            res.status(200).send({
+              success: true,
+              queryTime: queryTime,
+              steps: steps,
+              src: srcTitleUrl,
+              dest: destTitleUrl,
+              path: path
+            })
+          })
+        } else {
+          res.status(400).send({
+            success: false,
+            message: 'wikipedia title not found',
+            notFoundField: (!validSrc) ? 'src' : 'dest',
+            data: {
+              src: src,
+              dest: dest
+            }
+          });
+        }
+      });
+    });
   } else {
     res.status(400).send({
       success: false,
-      message: 'Error src and dest not specified'
+      message: 'Error src or dest not specified'
     });
   }
 });
 
-function devDummyResponse(res, src, dest) {
-  const DEFAULT_1 = {
-    success: true,
-    queryTime: 12345,
-    steps: 7,
-    src: {
-      title: src,
-      url: 'https://wikipedia.com/wiki/'+src
-    },
-    dest: {
-      title: dest,
-      url: 'https://wikipedia.com/wiki/'+dest
-    },
-    path: [
-      {
-        title: src,
-        url: 'https://wikipedia.com/wiki/'+src
-      },
-      {
-        title: 'step-1',
-        url: 'https://wikipedia.com/wiki/step-1'
-      },
-      {
-        title: 'step-2',
-        url: 'https://wikipedia.com/wiki/step-2'
-      },
-      {
-        title: 'step-3',
-        url: 'https://wikipedia.com/wiki/step-3'
-      },
-      {
-        title: 'step-4',
-        url: 'https://wikipedia.com/wiki/step-4'
-      },
-      {
-        title: 'step-5',
-        url: 'https://wikipedia.com/wiki/step-5'
-      },
-      {
-        title: 'step-6',
-        url: 'https://wikipedia.com/wiki/step-6'
-      },
-      {
-        title: dest,
-        url: 'https://wikipedia.com/wiki/'+dest
-      }
-    ]
+function convertWikiTitleUrl(rawTitle) {
+  // https://en.wikipedia.org/wiki/Linux > Linux
+  const s = rawTitle.split(/(https?:\/\/)?(en\.)?wikipedia\.(org|com)\/wiki\//)
+  var title = s[s.length-1]
+  title = title.replaceAll('_', ' '); // actual titles not the titles as appearing in url
+  var url = 'https://en.wikipedia.org/wiki/'+title
+  return {
+    title: title,
+    url: url
   }
-  const DEFAULT_2 = {
-    success: true,
-    queryTime: 103,
-    steps: 2,
-    src: {
-      title: src,
-      url: 'https://wikipedia.com/wiki/'+src
-    },
-    dest: {
-      title: dest,
-      url: 'https://wikipedia.com/wiki/'+dest
-    },
-    path: [
-      {
-        title: src,
-        url: 'https://wikipedia.com/wiki/'+src
-      },
-      {
-        title: '1',
-        url: 'https://wikipedia.com/wiki/1'
-      },
-      {
-        title: dest,
-        url: 'https://wikipedia.com/wiki/'+dest
-      }
-    ]
-  }
-  const EXCEPTION_1 = {
-    success: true,
-    queryTime: 0,
-    steps: 0,
-    src: {
-      title: 'same page',
-      url: 'https://wikipedia.com/wiki/same_page'
-    },
-    dest: {
-      title: 'same page',
-      url: 'https://wikipedia.com/wiki/same_page'
-    },
-    path: [
-      {
-        title: 'same page',
-        url: 'https://wikipedia.com/wiki/same_page'
-      }
-    ]
-  }
-  const EXCEPTION_2 = {
-    success: false,
-    message: 'path not found / exhausted search',
-    data: {
-      src: {
-        title: 'A really obscure thing',
-        url: 'https://wikipedia.com/wiki/A_really_obscure_thing'
-      },
-      dest: {
-        title: 'Another really obscure thing',
-        url: 'https://wikipedia.com/wiki/Another_really_obscure_thing'
-      }
-    }
-  }
-  const ERROR_1 = {
-    success: false,
-    message: 'wikipedia title not found',
-    notFoundField: 'src',
-    data: {
-      src: 'not an actual wikipedia page',
-      dest: 'Love'
-    }
-  }
-  const ERROR_2 = {
-    success: false,
-    message: 'wikipedia title not found',
-    notFoundField: 'dest',
-    data: {
-      src: 'Love',
-      dest: 'not an actual wikipedia page'
-    }
-  }
-  const ERROR_3 = {
-    success: false,
-    message: 'src or dest fields not specified'
-  }
-  const ERROR_4 = {
-    success: false,
-    message: 'Internal database error'
-  }
+}
 
-
-  var response = {
-    "message": [
-      "set src to '1' for default search between two pages, long wait",
-      "set src to '2' for default search between two pages, short wait",
-      "set src to '3' for same page exception",
-      "set src to '4' for path not found exception, will take long time to responde",
-      "set src to '5' for src title not found",
-      "set src to '6' for dest title not found",
-      "set src to '7' for src or dest fields not set",
-      "set src to '8' for database error"
-    ]
-  };
-  var delay = 0;
-  var status = 200;
-  switch (src) {
-    case '1':
-      response = DEFAULT_1;
-      delay = 10_000;
-      status = 200;
-      break;
-    case '2':
-      response = DEFAULT_2;
-      delay = 100;
-      status = 200;
-      break;
-    case '3':
-      response = EXCEPTION_1;
-      delay = 400;
-      status = 200;
-      break;
-    case '4':
-      response = EXCEPTION_2;
-      delay = 30_000;
-      status = 200;
-      break;
-    case '5':
-      response = ERROR_1;
-      delay = 100;
-      status = 400;
-      break;
-    case '6':
-      response = ERROR_2;
-      delay = 100;
-      status = 400;
-      break;
-    case '7':
-      response = ERROR_3;
-      delay = 0;
-      status = 400;
-      break;
-    case '8':
-      response = ERROR_4;
-      delay = 1_000;
-      status = 500;
-      break;
-  }
-
-  setTimeout(() => {
-    res.status(status).send(response);
-  }, delay);
+async function checkValidTitle(title, callback) {
+  var client = redis.createClient();
+  await client.connect();
+  const titleHash = createTitleHash(title);
+  const found = await client.hExists('titles', titleHash);
+  client.disconnect();
+  callback(found);
 }
 
 exports.router = router;

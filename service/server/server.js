@@ -25,9 +25,14 @@ app.use(cors());
 
 app.use(
   '/api/v1/linkPages',
-  limits.customLimit(6,1), // 6 per minute
+  // limits.customLimit(2,1), // 6 per minute
   require('./api/v1/linkPages').router
 );
+
+app.use(
+  '/api/v1/devLinkPages',
+  require('./api/v1/devLinkPages').router
+)
 
 
 // error handlers
