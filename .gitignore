@@ -1,4 +1,2 @@
 service/server/node_modules
 service/client/node_modules
-
-service/docker_upload.sh
