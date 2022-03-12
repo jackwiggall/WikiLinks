@@ -55,8 +55,8 @@ function convertWikiTitleUrl(rawTitle) {
   // https://en.wikipedia.org/wiki/Linux > Linux
   const s = rawTitle.split(/(https?:\/\/)?(en\.)?wikipedia\.(org|com)\/wiki\//)
   var title = s[s.length-1]
-  title = title.replaceAll('_', ' '); // actual titles not the titles as appearing in url
-  var url = 'https://en.wikipedia.org/wiki/'+title
+  title = title.replaceAll('_', ' ') // actual titles not the titles as appearing in url
+  var url = 'https://en.wikipedia.org/wiki/'+title.replaceAll(' ', '_')
   return {
     title: title,
     url: url

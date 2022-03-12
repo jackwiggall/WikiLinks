@@ -7,7 +7,7 @@ const cors = require('cors');
 const limits = require('./middleware/rate-limits');
 
 const app = express();
-const port = 3000;
+const port = 3030;
 
 
 // parsing json and form data
