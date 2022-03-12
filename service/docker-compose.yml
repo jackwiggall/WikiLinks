@@ -4,14 +4,23 @@ services:
     build: ./server
     restart: always
     depends_on:
-      - redis
-    network_mode: host
+      - database
 
   client: # front-end vuejs
     build: ./client
     restart: always
-    # ports:
-    #   - "55533:80"  ## forward port 80 on docker to 55533 on local machine
+    ports:
+      - "55533:80"  ## forward port 80 on docker to 55533 on local machine
     depends_on:
       - server
-    network_mode: host
+
+  database:
+    image: neo4j
+    restart: on-failure
+    environment:
+      - NEO4J_AUTH=neo4j/admin
+    expose:
+      - 7474
+    volumes:
+      - /var/lib/neo4j/import:/var/lib/neo4j/import ## static .csv files
+      - /var/lib/neo4j/data:/data	## database data files

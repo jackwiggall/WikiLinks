@@ -1,0 +1,7 @@
+USING PERIODIC COMMIT LOAD CSV WITH HEADERS FROM 'titles.csv' AS line
+CREATE (:Page{title: line.title})
+
+USING PERIODIC COMMIT LOAD CSV WITH HEADERS FROM 'relationships.csv' AS line
+MATCH (src:Page), (dest:Page)
+WHERE src.title = line.src AND dest.title = line.dest
+CREATE (src)-[:LINKS]->(dest)
