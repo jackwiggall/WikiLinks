@@ -7,7 +7,7 @@ services:
       - redis
     network_mode: host
 
-  client: # front-end vuejs
+  client: # front-end
     build: ./client
     restart: always
     # ports:
