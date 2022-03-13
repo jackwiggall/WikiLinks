@@ -4,6 +4,7 @@ var router = express.Router();
 
 router.post('/', (req,res) => {
   const src = req.body.src;
+  const dest = req.body.dest;
 
   var response = {
     "message": [
