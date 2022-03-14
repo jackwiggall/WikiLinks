@@ -22,6 +22,6 @@ function search() {
   fetch(API_URL+"devLinkPages", headers)
     .then(response => response.json())
     .then((data) => {
-      outputDiv.innerHTML = JSON.stringify(data)
+        outputDiv.innerHTML = JSON.stringify(data)
     });
 }
