@@ -21,7 +21,7 @@ router.post('/', (req,res) => {
   var delay = 0;
   var status = 200;
   switch (src) {
-    case '1':
+    case '"1"':
       response = {
         success: true,
         queryTime: 12345,
@@ -72,7 +72,7 @@ router.post('/', (req,res) => {
       delay = 10_000;
       status = 200;
       break;
-    case '2':
+    case '"2"':
       response = {
         success: true,
         queryTime: 103,
@@ -103,7 +103,7 @@ router.post('/', (req,res) => {
       delay = 100;
       status = 200;
       break;
-    case '3':
+    case '"3"':
       response = {
         success: true,
         queryTime: 0,
@@ -126,7 +126,7 @@ router.post('/', (req,res) => {
       delay = 400;
       status = 200;
       break;
-    case '4':
+    case '"4"':
       response = {
         success: false,
         message: 'path not found / exhausted search',
@@ -144,7 +144,7 @@ router.post('/', (req,res) => {
       delay = 30_000;
       status = 200;
       break;
-    case '5':
+    case '"5"':
       response = {
         success: false,
         message: 'wikipedia title not found',
@@ -157,7 +157,7 @@ router.post('/', (req,res) => {
       delay = 100;
       status = 400;
       break;
-    case '6':
+    case '"6"':
       response = {
         success: false,
         message: 'wikipedia title not found',
@@ -170,7 +170,7 @@ router.post('/', (req,res) => {
       delay = 100;
       status = 400;
       break;
-    case '7':
+    case '"7"':
       response = {
         success: false,
         message: 'src or dest fields not specified'
@@ -178,7 +178,7 @@ router.post('/', (req,res) => {
       delay = 0;
       status = 400;
       break;
-    case '8':
+    case '"8"':
       response = {
         success: false,
         message: 'Internal database error'
