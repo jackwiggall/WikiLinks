@@ -9,20 +9,32 @@
     <title>WikiLinks</title>
 </head>
   <body>
-    <div class="p-3 mb-2 bg-info text-white"><img src="logo.png" style="height:auto;max-width:500px"</img></div>	
+    <div class="p-3 mb-2 bg-info text-white"><img src="logo.png"></img></div>	
 
-    <div class="shadow-lg p-3 mb-5 bg-light rounded">
-        <p>Src:
-        <input type="text" id="src">
-        </p>
-        <p>
-        Dest:
-        <input type="text" id="dest">
-        </p>
-        <button id="search">search</button>
+    <div class="container">
+        <!--Main box-->
+        <div class="col shadow-lg p-3 mt-5 mt-5 bg-light rounded">
+            <h2>Description</h2>
+            <p>Lorem ipsum </p>
+        </div>
+        <div class="row">
+            <div class="col-3 shadow-lg p-3 mb-5 mt-5 bg-light rounded">
+                <p>
+                    Src:
+                    <input type="text" id="src">
+                </p>
+                <p>
+                    Dest:
+                    <input type="text" id="dest">
+                </p>
+                <button id="search">search</button>
+            </div>
+            <div class="col-1"><!--whitespace--></div>
+            <div class="col shadow-lg p-3 mb-5 mt-5 bg-light rounded">
+                <h2>Result:</h2>
+                <div id="output"></div>
+            </div>
+        </div>
     </div>
-
-
-    <div id="output" class="shadow-lg p-3 mb-5 bg-light rounded" style=""></div>
   </body>
 </html>
