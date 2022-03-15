@@ -4,7 +4,7 @@ import os # path exists
 import re # regex
 import mysql.connector
 from lxml import etree # xml parser
-
+import gzip
 
 XML_HEADER = "{http://www.mediawiki.org/xml/export-0.10/}"
 
@@ -32,8 +32,8 @@ SEPERATOR="<!!>"
 
 class GzipWriteBuffer:
     def __init__(self, maxbuffer, filename):
-        f=open(filename, "w")
-        f.close()
+        # f=open(filename, "w")
+        # f.close()
         self.buffer = ""
         self.maxbuffer = maxbuffer
         self.filename = filename
@@ -65,14 +65,22 @@ def main():
         QUERY_CONTENT = 'INSERT INTO Page (title, content) VALUES (%s,%s)'
 
         tree = etree.iterparse(f)
+        skip = 8_000_000
         for event,element in tree:
             if element.tag.endswith("page"):
                 i+=1
                 iterations+=1
 
+                if iterations < skip:
+                    if (i >= 1_000):
+                        i=0
+                        print(f'\rskip {iterations:_}', end="")
+                    element.clear()
+                    continue
+
                 if i >= 1_000:
                     i=0
-                    print(f'\r{iterations:_}', end="")
+                    print(f'\r{iterations:_}      ', end="")
                     con.commit()
 
                 title = element.find(XML_HEADER+"title").text # title element
@@ -106,10 +114,10 @@ def main():
                                         link = link.split('|')[0]
                                     link = link.replace('\n','') # sometimes occurs
                                     # create record of links to create relationships with after all titles have been populated
-                                    relationshipsFile.writeLine((title+"<!!>"+link)
+                                    relationshipsFile.writeLine(title+"<!!>"+link)
                                     
 
-                # dont cache / store in ram
+                # dont (cache / store in ram)
                 element.clear()
     except etree.XMLSyntaxError: ## happens when at the end of the wiki file
         pass
@@ -121,7 +129,7 @@ def main():
     # create relationships
     print()
     print("creating relationships")
-    with f as gzip.open(BUFFER_FILE, "rb"):
+    with gzip.open(BUFFER_FILE, "rb") as f:
         query = '''
         INSERT INTO Link (src,dest)
             (SELECT (SELECT id FROM Page WHERE title=%s),
@@ -129,12 +137,15 @@ def main():
         '''
         iterations=0
         for line in f:
-            src,dest = line.split("<!!>")
+            [src,dest] = line.split("<!!>")
             iterations+=1
             if (iterations % 1_000 == 0):
                 print(f'\r{iterations:_}', end="")
                 con.commit()
-            cur.query(query, (src,dest))
+            try:
+                cur.query(query, (src,dest))
+            except mysql.connector.errors.IntegrityError: # duplicate entry
+                pass
 
     con.commit()
     print()
