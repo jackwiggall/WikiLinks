@@ -26,26 +26,49 @@ con = mysql.connector.connect(
     db='wikilinks'
 )
 
+
+BUFFER_FILE="/ramdisk/relationships.gz"
+SEPERATOR="<!!>"
+
+class GzipWriteBuffer:
+    def __init__(self, maxbuffer, filename):
+        f=open(filename, "w")
+        f.close()
+        self.buffer = ""
+        self.maxbuffer = maxbuffer
+        self.filename = filename
+
+    def writeLine(self, line):
+        # print(line)
+        self.buffer += line
+        self.buffer += '\n'
+        ## check if over buffer limit
+        if len(self.buffer) > self.maxbuffer:
+            self.flushBuffer()
+
+    def flushBuffer(self):
+        with gzip.open(self.filename, 'at') as f:
+            f.write(self.buffer)
+        ## clear buffer
+        self.buffer = ""
+
 cur = con.cursor()
 
-skip=1_700_000
-
 def main():
-    relationships = []
+    relationshipsFile = GzipWriteBuffer(1024*8, BUFFER_FILE)
     try:
         # 10KB compression buffer
         i=0
         iterations=0
         f=open(WIKI_XML_FILE, 'rb')
+        QUERY_REDIRECT = 'INSERT INTO Page (title, redirect) VALUES (%s,%s)'
+        QUERY_CONTENT = 'INSERT INTO Page (title, content) VALUES (%s,%s)'
+
         tree = etree.iterparse(f)
         for event,element in tree:
             if element.tag.endswith("page"):
                 i+=1
                 iterations+=1
-
-                if (iterations < skip):
-                    element.clear()
-                    continue
 
                 if i >= 1_000:
                     i=0
@@ -54,24 +77,22 @@ def main():
 
                 title = element.find(XML_HEADER+"title").text # title element
                 if ':' in title: # special links
+                    element.clear()
                     continue
 
                 redirectElement = element.find(XML_HEADER+"redirect") # redirect element
                 if redirectElement != None: ## title redirect to redirectElement
                     redirectTitle = redirectElement.values()[0]
                     # print("redirect",title,"->",redirectTitle)
-                    query = 'INSERT INTO Page (title, redirect) VALUES (%s,%s)'
-                    try:
-                        cur.execute(query, (title, redirectTitle))
+                    try: 
+                        cur.execute(QUERY_REDIRECT, (title, redirectTitle))
                     except mysql.connector.errors.IntegrityError: # duplicate entry
                         pass
                 else:
                     textElement = element.find(XML_HEADER+"revision").find(XML_HEADER+"text")
                     content = textElement.text
-                    # print("title",title)
-                    query = 'INSERT INTO Page (title, content) VALUES (%s,%s)'
                     try:
-                        cur.execute(query, (title, content))
+                        cur.execute(QUERY_CONTENT, (title, content))
                     except mysql.connector.errors.IntegrityError: # duplicate entry
                         pass
                     if content != None:
@@ -85,7 +106,7 @@ def main():
                                         link = link.split('|')[0]
                                     link = link.replace('\n','') # sometimes occurs
                                     # create record of links to create relationships with after all titles have been populated
-                                    relationships.append([title, link])
+                                    relationshipsFile.writeLine((title+"<!!>"+link)
                                     
 
                 # dont cache / store in ram
@@ -94,34 +115,31 @@ def main():
         pass
     except Exception as e:
         raise e
+    
+    relationshipsFile.flushBuffer()
+
     # create relationships
-    for src,dest in relationships:
-        print(src,dest)
-
     print()
-    print(done)
+    print("creating relationships")
+    with f as gzip.open(BUFFER_FILE, "rb"):
+        query = '''
+        INSERT INTO Link (src,dest)
+            (SELECT (SELECT id FROM Page WHERE title=%s),
+            id FROM Page WHERE title=%s);
+        '''
+        iterations=0
+        for line in f:
+            src,dest = line.split("<!!>")
+            iterations+=1
+            if (iterations % 1_000 == 0):
+                print(f'\r{iterations:_}', end="")
+                con.commit()
+            cur.query(query, (src,dest))
 
+    con.commit()
+    print()
+    print("done")
 
-
-def createRedisCommand(src,dest):
-    command = "SADD "
-    command += escapeRedisParam(src)
-    command += " "
-    command += escapeRedisParam(dest)
-    return command
-
-def escapeRedisParam(arg):
-    escaped = arg.replace("\\","\\\\") # "\" "\\"
-    escaped = escaped.replace('"', '\\"') # """ "\""
-    # i dont know how where or why but somehow newlines are in the arg string
-    # "Beavis and Butt-Head" "VH1 Classic (American TV channel)\n"
-    escaped = escaped.replace('\n','')
-    escaped = '"' + escaped + '"'
-    return escaped
-
-# first 8 base64 characters of a md5 hash
-def hashTitle(title):
-    return base64.b64encode(hashlib.md5(title.encode('utf-8')).digest())[:8].decode('utf8')
 
 if __name__ == '__main__':
     main()
