@@ -3,9 +3,11 @@ USE wikilinks;
 
 CREATE TABLE Page (
   id INT NOT NULL AUTO_INCREMENT,
-  title VARBINARY (255) NOT NULL UNIQUE,
-  
-  redirect VARBINARY(255) NULL,
+  title NVARCHAR(255) NOT NULL UNIQUE,
+  title_upper NVARCHAR(255) NULL,
+
+  redirect NVARCHAR(255) NULL,
+
 
   content MEDIUMBLOB NULL,
   PRIMARY KEY (id)
