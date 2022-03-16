@@ -1,9 +1,10 @@
 <template>
 <div id="inputSrcDest">
   src
-  <input type="text">
+  <input v-model="src" type="text">
   dest
-  <input type="text">
+  <input v-model="dest" type="text">
+  <input type="submit"  @click="submit">
 </div>
 </template>
 
@@ -18,6 +19,11 @@ export default {
   name: 'InputSrcDest',
   props: [
     
-  ]
+  ],
+  methods: {
+    submit: function() {
+      console.log("submit");
+    }
+  }
 }
 </script>
