@@ -58,13 +58,13 @@ def main():
     lines = 0
     try:
         # 10KB compression buffer
-        file = GzipWriteBuffer(1024*10, OUTPUT_FILE)
+        file = GzipWriteBuffer(1024*16, OUTPUT_FILE)
         i=0
         f=open(WIKI_XML_FILE, 'rb')
         tree = etree.iterparse(f)
         for event,element in tree:
             if element.tag.endswith("page"):
-                if i >= 100000:
+                if i >= 100_000:
                     i=0
                     print(f'\r{lines:_}', end="")
 
@@ -133,7 +133,7 @@ def escapeRedisParam(arg):
 
 # first 8 base64 characters of a md5 hash
 def hashTitle(title):
-    return base64.b64encode(hashlib.md5(title.encode('utf-8')).digest())[:8].decode('utf8')
+    return base64.b64encode(hashlib.md5(title.encode('utf-8').upper()).digest())[:8].decode('utf8')
 
 if __name__ == '__main__':
     main()

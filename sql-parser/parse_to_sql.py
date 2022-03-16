@@ -2,7 +2,7 @@
 import sys # args, exit
 import os # path exists
 import re # regex
-import mysql.connector
+import mariadb, mysql.connector
 from lxml import etree # xml parser
 import gzip
 
@@ -19,13 +19,20 @@ if not os.path.exists(WIKI_XML_FILE): # wikipedia xml file not exists
     sys.exit(1)
 
 
-con = mysql.connector.connect(
+mariaCon = mariadb.connect(
+    host='127.0.0.1',
+    user='wiki',
+    passwd='L1nKz',
+    database='wikilinks'
+)
+mariaCur = mariaCon.cursor()
+mysqlCon = mysql.connector.connect(
     host='127.0.0.1',
     user='wiki',
     passwd='L1nKz',
     db='wikilinks'
 )
-
+mysqlCur = mysqlCon.cursor()
 
 BUFFER_FILE="/ramdisk/relationships.gz"
 SEPERATOR="<!!>"
@@ -52,7 +59,6 @@ class GzipWriteBuffer:
         ## clear buffer
         self.buffer = ""
 
-cur = con.cursor()
 
 def main():
     relationshipsFile = GzipWriteBuffer(1024*8, BUFFER_FILE)
@@ -60,12 +66,16 @@ def main():
         # 10KB compression buffer
         i=0
         iterations=0
+        inserts=0
+        fails=0
+        relationships=0
         f=open(WIKI_XML_FILE, 'rb')
         QUERY_REDIRECT = 'INSERT INTO Page (title, redirect) VALUES (%s,%s)'
-        QUERY_CONTENT = 'INSERT INTO Page (title, content) VALUES (%s,%s)'
+        QUERY_CONTENT = 'INSERT INTO Page (title) VALUES (%s)'
 
         tree = etree.iterparse(f)
-        skip = 8_000_000
+        # skip = 8_000_000
+        skip = 0
         for event,element in tree:
             if element.tag.endswith("page"):
                 i+=1
@@ -80,8 +90,8 @@ def main():
 
                 if i >= 1_000:
                     i=0
-                    print(f'\r{iterations:_}      ', end="")
-                    con.commit()
+                    print(f'\rinserts {inserts:_}, fails {fails:_}', end="")
+                    mysqlCon.commit()
 
                 title = element.find(XML_HEADER+"title").text # title element
                 if ':' in title: # special links
@@ -92,17 +102,19 @@ def main():
                 if redirectElement != None: ## title redirect to redirectElement
                     redirectTitle = redirectElement.values()[0]
                     # print("redirect",title,"->",redirectTitle)
-                    try: 
-                        cur.execute(QUERY_REDIRECT, (title, redirectTitle))
+                    try:
+                        mysqlCur.execute(QUERY_REDIRECT, (title, redirectTitle,))
+                        inserts+=1
                     except mysql.connector.errors.IntegrityError: # duplicate entry
-                        pass
+                        fails+=1
                 else:
                     textElement = element.find(XML_HEADER+"revision").find(XML_HEADER+"text")
                     content = textElement.text
                     try:
-                        cur.execute(QUERY_CONTENT, (title, content))
+                        mysqlCur.execute(QUERY_CONTENT, (title,))
+                        inserts+=1
                     except mysql.connector.errors.IntegrityError: # duplicate entry
-                        pass
+                        fails+=1
                     if content != None:
                         if ':' not in title: # if any special links sneekied their way through
                             # matches = re.findall('(?<=\[\[)[^\]]*(?=\]\])', text) ## find links
@@ -115,6 +127,7 @@ def main():
                                     link = link.replace('\n','') # sometimes occurs
                                     # create record of links to create relationships with after all titles have been populated
                                     relationshipsFile.writeLine(title+"<!!>"+link)
+                                    relationships+=1
                                     
 
                 # dont (cache / store in ram)
@@ -128,26 +141,32 @@ def main():
 
     # create relationships
     print()
-    print("creating relationships")
+    print(f'creating relationships {relationships:_}')
     with gzip.open(BUFFER_FILE, "rb") as f:
         query = '''
         INSERT INTO Link (src,dest)
-            (SELECT (SELECT id FROM Page WHERE title=%s),
-            id FROM Page WHERE title=%s);
+            (SELECT (SELECT id FROM Page WHERE title=? OR title=? LIMIT 1),
+            id FROM Page WHERE title=? OR title=? LIMIT 1);
         '''
         iterations=0
+        successes=0
+        fails=0
         for line in f:
+            line=line.decode()[:-1] ## \n
             [src,dest] = line.split("<!!>")
+            srcCap = src[0].upper()+src[1:]
+            destCap = dest[0].upper()+dest[1:]
             iterations+=1
             if (iterations % 1_000 == 0):
-                print(f'\r{iterations:_}', end="")
-                con.commit()
+                print(f'\rsuccesses {successes:_}, fails {fails:_}', end="")
+                mariaCon.commit()
             try:
-                cur.query(query, (src,dest))
-            except mysql.connector.errors.IntegrityError: # duplicate entry
-                pass
+                mariaCur.execute(query, (src,srcCap, dest,destCap))
+                successes+=1
+            except mariadb.IntegrityError as e: # duplicate entry
+                fails+=1
 
-    con.commit()
+    mariaCon.commit()
     print()
     print("done")
 
