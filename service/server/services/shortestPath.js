@@ -55,3 +55,64 @@ async function findShortestPath(src, dest, callback) {
   callback(path, queryTime)
 }
 exports.findShortestPath = findShortestPath;
+
+
+async function findShortestPathSql(src, dest, callback) {
+  const queryStartTime = Date.now();
+  
+
+  /*
+  srcId = SELECT id FROM Page WHERE title=src
+  destId = SELECT id FROM Page WHERE title=dest
+
+  // links
+  SELECT dest FROM Link WHERE src=srdId
+
+  // convert back
+  title = SELECT title FROM Page WHERE id=srcId
+  */
+
+  var front_queue = []
+  var back_queue = []
+  
+  front_queue.push(srcId)
+  back_queue.push(destId)
+
+  var front_visited = Map() // [title, parent]
+  var back_visited = Map()
+
+  var found = false;
+  var direction = 'forward';
+  while (front_queue > 0 && back_queue > 0) {
+    if (direction == 'forward') { // src
+      var front_focus = front_queue.shift()
+      // check if intersec
+      if (back_visited.has(front_focus)) {
+        break
+      }
+      front_nodes = [1,2,3,4,5] // sql
+      for (let i=0; i<front_nodes.length; i++) { // branch of for each node
+        if (!front_visited.has(front_nodes[i])) { // prevent looping
+          front_visited.set(front_focus, front_nodes[i])
+          front_queue.push(front_nodes[i])
+        }
+      }
+
+    } else { // backwards  dest
+      // when adding to visited put in [parent, title]
+      var back_focus = back_queue.shift()
+      if (visited.has(back_focus)) {
+
+      }
+    }
+
+    direction = (direction == 'backwards') ? 'forward' : 'backwards';
+  }
+
+  const queryEndTime = Date.now();
+  const queryTime = queryEndTime - queryStartTime;
+
+  // return path
+  callback(path, queryTime)
+}
+exports.findShortestPath = findShortestPath;

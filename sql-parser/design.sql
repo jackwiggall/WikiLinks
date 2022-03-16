@@ -4,7 +4,7 @@ USE wikilinks;
 CREATE TABLE Page (
   id INT NOT NULL AUTO_INCREMENT,
   title NVARCHAR(255) NOT NULL UNIQUE,
-  title_upper NVARCHAR(255) NULL,
+  title_upper NVARCHAR(255) NOT NULL,
 
   redirect NVARCHAR(255) NULL,
 
@@ -30,5 +30,5 @@ GRANT SELECT,INSERT,UPDATE,DELETE on wikilinks.* TO wiki@localhost;
 ---
 
 INSERT INTO Link (src,dest)
-  (SELECT (SELECT id FROM Page WHERE title="src"),
-    id FROM Page WHERE title="dest");
+  (SELECT (SELECT id FROM Page WHERE title_upper=UPPER("src")),
+    id FROM Page WHERE title_upper=UPPER("dest"));
