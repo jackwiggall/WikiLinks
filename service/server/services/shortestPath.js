@@ -1,6 +1,6 @@
 const redis = require('redis');
 const { createTitleHash } = require('./titleHash.js');
-const pool = main.require.require('./pool.js');
+const pool = require.main.require('./pool.js');
 
 
 async function findShortestPath(src, dest, callback) {
