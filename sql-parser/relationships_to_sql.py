@@ -26,28 +26,30 @@ def main():
 
     # create relationships
     print()
-    print("creating relationships")
+    print(f'creating relationships')
     with gzip.open(BUFFER_FILE, "rb") as f:
         query = '''
         INSERT INTO Link (src,dest)
-            (SELECT (SELECT id FROM Page WHERE title_upper=UPPER(?)),
-            id FROM Page WHERE title_upper=UPPER(?));
+            (SELECT (SELECT id FROM Page WHERE title=? OR title=? LIMIT 1),
+            id FROM Page WHERE title=? OR title=? LIMIT 1);
         '''
         iterations=0
+        successes=0
+        fails=0
         for line in f:
-            line=line.decode()[:-1]
+            line=line.decode()[:-1] ## \n
             [src,dest] = line.split("<!!>")
+            srcCap = src[0].upper()+src[1:]
+            destCap = dest[0].upper()+dest[1:]
             iterations+=1
             if (iterations % 1_000 == 0):
-                print(f'\r{iterations:_}', end="")
+                print(f'\rsuccesses {successes:_}, fails {fails:_}', end="")
                 con.commit()
             try:
-                cur.execute(query, (src,dest,))
-                # print(src,dest)
-                # print(query % (src,dest))
-                # break
+                cur.execute(query, (src,srcCap, dest,destCap))
+                successes+=1
             except mariadb.IntegrityError as e: # duplicate entry
-                pass
+                fails+=1
 
     con.commit()
     print()
