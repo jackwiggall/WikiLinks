@@ -1,5 +1,7 @@
 const redis = require('redis');
 const { createTitleHash } = require('./titleHash.js');
+const pool = main.require.require('./pool.js');
+
 
 async function findShortestPath(src, dest, callback) {
   const queryStartTime = Date.now();
@@ -58,6 +60,10 @@ exports.findShortestPath = findShortestPath;
 
 
 async function findShortestPathSql(src, dest, callback) {
+  const val = await pool.query('SELECT COUNT(title) FROM Page;');
+  console.log(val);
+
+  return
   const queryStartTime = Date.now();
   
 
