@@ -19,6 +19,13 @@ CREATE TABLE Link (
   PRIMARY KEY (src,dest)
 );
 
+CREATE TABLE Redirect (
+  src INT,
+  dest INT,
+  FOREIGN KEY (src) REFERENCES Page(id),
+  FOREIGN KEY (dest) REFERENCES Page(id)
+)
+
 CREATE USER wiki@localhost identified by 'L1nKz';
 GRANT SELECT,INSERT,UPDATE,DELETE on wikilinks.* TO wiki@localhost;
 

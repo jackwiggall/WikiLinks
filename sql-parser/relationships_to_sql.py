@@ -40,7 +40,11 @@ def main():
             line=line.decode()[:-1] ## \n
             [src,dest] = line.split("<!!>")
             srcCap = src[0].upper()+src[1:]
-            destCap = dest[0].upper()+dest[1:]
+            destCap = dest
+            try:
+                destCap = dest[0].upper()+dest[1:]
+            except:
+                pass
             iterations+=1
             if (iterations % 1_000 == 0):
                 print(f'\rsuccesses {successes:_}, fails {fails:_}', end="")
