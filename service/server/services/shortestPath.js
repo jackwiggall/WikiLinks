@@ -1,6 +1,6 @@
 const redis = require('redis');
 const { createTitleHash } = require('./titleHash.js');
-const pool = require.main.require('./pool.js');
+const { pool } = require.main.require('./pool.js');
 
 
 async function findShortestPath(src, dest, callback) {
@@ -59,66 +59,115 @@ async function findShortestPath(src, dest, callback) {
 exports.findShortestPath = findShortestPath;
 
 
+async function poolQuery(query, data=[]) { // await pool.query dont workie
+  return new Promise((resolve, reject) => {
+    pool.query(query, data, (err, response) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(response);
+      }
+    });
+  });
+}
+
+function get_path(src, dest, src_visited, dest_visited, intersection) {
+  // flip(intersection -> src) -> (intersection -> dest)
+  console.log(src,dest);
+  var path = []
+  path.push(intersection)
+  var focus = intersection
+  while (focus !== src) {
+    focus = src_visited.get(focus)
+    path.push(focus)
+  }
+
+  path.reverse()
+
+  focus = intersection
+  while (focus !== dest) {
+    focus = dest_visited.get(focus)
+    path.push(focus)
+  }
+
+  return path
+}
+
+function check_intersection(src_visited, dest_visited) {
+  // maybe iterate over smallest map
+  for (focus of src_visited.keys()) {
+    if (dest_visited.has(focus)) {
+      return focus
+    }
+  }
+  return undefined
+}
+
+
 async function findShortestPathSql(src, dest, callback) {
-  const val = await pool.query('SELECT COUNT(title) FROM Page;');
-  console.log(val);
-
-  return
-  const queryStartTime = Date.now();
+  // const val = await pool.query('SELECT title FROM Page LIMIT 10');
+  // console.log(val);
+  // const val = await poolQuery('SELECT title FROM Page LIMIT 10')
+  const queryStartTime = Date.now()
   
+  var srcRow = await poolQuery(`SELECT id FROM Page WHERE title=?`, src)
+  var destRow = await poolQuery(`SELECT id FROM Page WHERE title=?`, dest)
+  const srcId = srcRow[0].id
+  const destId = destRow[0].id
 
-  /*
-  srcId = SELECT id FROM Page WHERE title=src
-  destId = SELECT id FROM Page WHERE title=dest
+  var src_queue = []
+  var dest_queue = []
+  src_queue.push(srcId)
+  dest_queue.push(destId)
 
-  // links
-  SELECT dest FROM Link WHERE src=srdId
+  var src_visited = new Map() // [title, parent]
+  var dest_visited = new Map()
+  src_visited.set(srcId, -1)
+  dest_visited.set(destId, -1)
 
-  // convert back
-  title = SELECT title FROM Page WHERE id=srcId
-  */
-
-  var front_queue = []
-  var back_queue = []
-  
-  front_queue.push(srcId)
-  back_queue.push(destId)
-
-  var front_visited = Map() // [title, parent]
-  var back_visited = Map()
-
-  var found = false;
-  var direction = 'forward';
-  while (front_queue > 0 && back_queue > 0) {
-    if (direction == 'forward') { // src
-      var front_focus = front_queue.shift()
-      // check if intersec
-      if (back_visited.has(front_focus)) {
-        break
-      }
-      front_nodes = [1,2,3,4,5] // sql
-      for (let i=0; i<front_nodes.length; i++) { // branch of for each node
-        if (!front_visited.has(front_nodes[i])) { // prevent looping
-          front_visited.set(front_focus, front_nodes[i])
-          front_queue.push(front_nodes[i])
-        }
-      }
-
-    } else { // backwards  dest
-      // when adding to visited put in [parent, title]
-      var back_focus = back_queue.shift()
-      if (visited.has(back_focus)) {
-
+  var intersection = undefined
+  while (intersection == undefined && src_queue.length != 0 && dest_queue.length != 0) {
+    // forward bfs and backwards bfs *should* be the exact same but just with a few variable changes
+    // forward bfs
+    const src_focus = src_queue.shift() // pop
+    const src_children = await poolQuery(`SELECT dest FROM Link WHERE src=?`, src_focus);
+    for (let i=0; i<src_children.length; i++) {
+      if (!src_visited.has(src_children[i].dest)) { // not already visited
+        src_visited.set(src_children[i].dest, src_focus)
+        src_queue.push(src_children[i].dest)
       }
     }
 
-    direction = (direction == 'backwards') ? 'forward' : 'backwards';
-  }
+    // backwards bfs
+    const dest_focus = dest_queue.shift() // pop
+    const dest_children = await poolQuery(`SELECT src FROM Link WHERE dest=?`, dest_focus);
+    for (let i=0; i<dest_children.length; i++) {
+      if (!dest_visited.has(dest_children[i].src)) { // not already visited
+        dest_visited.set(dest_children[i].src, dest_focus)
+        dest_queue.push(dest_children[i].src)
+      }
+    }
 
+    intersection = check_intersection(src_visited, dest_visited)
+  }
+  
   const queryEndTime = Date.now();
   const queryTime = queryEndTime - queryStartTime;
+  if (intersection) {
+    const path = get_path(srcId, destId, src_visited, dest_visited, intersection)
+    var titlePath = []
+    for (let i=0; i<path.length; i++) {
+      const title = await poolQuery(`SELECT title FROM Page where id=?`,path[i]);
+      titlePath.push((title[0].title).toString())
+    }
+    callback(titlePath, queryTime)
+  } else {
+    console.log("no path found");
+    callback([],0)
+  }
+
+
 
   // return path
-  callback(path, queryTime)
 }
-exports.findShortestPath = findShortestPath;
+exports.findShortestPathSql = findShortestPathSql;
