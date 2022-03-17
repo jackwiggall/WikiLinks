@@ -21,7 +21,10 @@ SEPERATOR="<!!>"
 
 
 
-# 2_750_000
+# 27_500_000
+# 20_500_000
+# 2_000_000
+skip=60_000_000
 def main():
 
     # create relationships
@@ -37,6 +40,9 @@ def main():
         successes=0
         fails=0
         for line in f:
+            iterations+=1
+            if iterations < skip:
+                continue
             line=line.decode()[:-1] ## \n
             [src,dest] = line.split("<!!>")
             srcCap = src[0].upper()+src[1:]
@@ -45,7 +51,6 @@ def main():
                 destCap = dest[0].upper()+dest[1:]
             except:
                 pass
-            iterations+=1
             if (iterations % 1_000 == 0):
                 print(f'\rsuccesses {successes:_}, fails {fails:_}', end="")
                 con.commit()
