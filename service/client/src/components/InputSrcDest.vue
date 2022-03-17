@@ -5,15 +5,14 @@
       <input v-model="src" type="text" style="background: #E7BB40;">
     </div>
     <div id="inputDest">
-
-    dest
-    <input v-model="dest" type="text" style="background: #E7BB40;">
+      dest
+      <input v-model="dest" type="text" style="background: #E7BB40;">
     </div>
-    <input type="submit"  @click="submit" style="background: #E7BB40;">
+    <input type="submit" @click="submit(src, dest)" style="background: #E7BB40;">
   </div>
   </template>
 
-  <style scoped>
+<style scoped>
   *{
     font-family: Georgia, serif;
     font-weight: lighter;
@@ -26,16 +25,14 @@
   }
 
   #inputSrcDest {
-  background: #E4CC8A;
-  display: flex;
-  justify-content: center;
-  font-family: Georgia, serif;
-  font-weight: lighter;
-  font-size: 20px;
-  padding: 40px;
-
-}
-
+    background: #E4CC8A;
+    display: flex;
+    justify-content: center;
+    font-family: Georgia, serif;
+    font-weight: lighter;
+    font-size: 20px;
+    padding: 40px;
+  }
 </style>
 
 <script>
@@ -45,8 +42,14 @@ export default {
 
   ],
   methods: {
-    submit: function() {
-      console.log("submit");
+    submit: function(src, dest) {
+      this.$emit('submit', src, dest)
+    }
+  },
+  data() {
+    return {
+      src: "",
+      dest: "",
     }
   }
 }
