@@ -7,7 +7,8 @@
 
 <style scoped>
 #page {
-  background: green;
+  background: #ECE4B7;
+  
 }
 </style>
 

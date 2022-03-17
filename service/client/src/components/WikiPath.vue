@@ -1,8 +1,10 @@
 <template>
-  <div id="path"> 
+  <div id="path">
     <h1>WikiPath</h1>
       <li v-for="(page, key) in path" :key="key">
+
           <WikiPage :title=page.title :url=page.url />
+
       </li>
   </div>
 
@@ -11,9 +13,15 @@
 
 <style scoped>
 #path {
-  background: red;
+  background: #E7BB40;
+  padding: 12px;
 }
-  
+li{
+
+list-style-type: none;
+  padding: 10px;
+}
+
 </style>
 
 <script>
