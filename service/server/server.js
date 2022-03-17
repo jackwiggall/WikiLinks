@@ -29,6 +29,12 @@ app.use(
   require('./api/v1/linkPages').router
 );
 
+
+app.use(
+  '/api/v1/test',
+  require('./api/v1/test').router
+)
+
 app.use(
   '/api/v1/devLinkPages',
   require('./api/v1/devLinkPages').router
