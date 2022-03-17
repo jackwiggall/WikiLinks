@@ -18,6 +18,8 @@
 
 <script>
 import WikiPage from './WikiPage.vue'
+// import axios from 'axios'
+
 export default {
   name: 'WikiPath',
   props: [
@@ -25,6 +27,7 @@ export default {
   ],
   components: {
     WikiPage
-  }
+  },
 }
+// var test = "tes?t"
 </script>

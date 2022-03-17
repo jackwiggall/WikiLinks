@@ -4,7 +4,7 @@
   <input v-model="src" type="text">
   dest
   <input v-model="dest" type="text">
-  <input type="submit"  @click="submit">
+  <input type="submit" @click="submit(src, dest)">
 </div>
 </template>
 
@@ -21,8 +21,14 @@ export default {
     
   ],
   methods: {
-    submit: function() {
-      console.log("submit");
+    submit: function(src, dest) {
+      this.$emit('submit', src, dest)
+    }
+  },
+  data() {
+    return {
+      src: "",
+      dest: "",
     }
   }
 }
