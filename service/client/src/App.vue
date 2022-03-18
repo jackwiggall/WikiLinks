@@ -7,7 +7,7 @@
       <WikiPath :path="path" :queryTime="queryTime" :steps="steps"/>
     </div>
     <footer>
-      <p>made by: Elliot, michael, Jack, Nicole, Bijoy</p>
+      <p>made by: Elliot, Michael, Jack, Nicole, Bijoy</p>
     </footer>
   </div>
 </template>
