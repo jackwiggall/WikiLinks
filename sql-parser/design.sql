@@ -21,11 +21,3 @@ CREATE TABLE Link (
 
 CREATE USER wiki@localhost identified by 'L1nKz';
 GRANT SELECT,INSERT,UPDATE,DELETE on wikilinks.* TO wiki@localhost;
-
-
-
----
-
-INSERT INTO Link (src,dest)
-  (SELECT (SELECT id FROM Page WHERE title_upper=UPPER("src")),
-    id FROM Page WHERE title_upper=UPPER("dest"));
