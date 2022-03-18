@@ -9,7 +9,6 @@ const limits = require('./middleware/rate-limits');
 const app = express();
 const port = 3000;
 
-
 // parsing json and form data
 app.use(compression());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -21,20 +20,16 @@ app.use(helmet());
 // Cross Origin Resource Sharing
 app.use(cors());
 
-
-
 app.use(
   '/api/v1/linkPages',
   limits.customLimit(10,1), // 10 per minute
   require('./api/v1/linkPages').router
 );
 
-
 app.use(
   '/api/v1/devLinkPages',
   require('./api/v1/devLinkPages').router
 )
-
 
 // error handlers
 function notFoundError(req, res, next) {
