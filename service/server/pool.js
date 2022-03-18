@@ -9,7 +9,7 @@ const pool = mysql.createPool({
   host: mariadbHost,
   database: 'wikilinks',
   user: 'wiki',
-  password: 'l1nKz',
+  password: 'L1nKz',
   connectionLimit: 5
 });
 

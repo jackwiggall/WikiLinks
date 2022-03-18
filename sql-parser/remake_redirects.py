@@ -14,53 +14,38 @@ con = mariadb.connect(
 cur = con.cursor()
 
 
-BUFFER_FILE="/ramdisk/relationships.gz"
-SEPERATOR="<!!>"
-
-class GzipWriteBuffer:
-    def __init__(self, maxbuffer, filename):
-        # f=open(filename, "w")
-        # f.close()
-        self.buffer = ""
-        self.maxbuffer = maxbuffer
-        self.filename = filename
-
-    def writeLine(self, line):
-        # print(line)
-        self.buffer += line
-        self.buffer += '\n'
-        ## check if over buffer limit
-        if len(self.buffer) > self.maxbuffer:
-            self.flushBuffer()
-
-    def flushBuffer(self):
-        with gzip.open(self.filename, 'at') as f:
-            f.write(self.buffer)
-        ## clear buffer
-        self.buffer = ""
-
-
 def main():
-    query = '''
-    SELECT id,title,redirect FROM Page WHERE id >= ? AND id < ?;
+    SEARCH_QUERY = '''
+    SELECT id,redirect FROM Page WHERE redirect IS NOT NULL AND id >= ? AND id < ?
+    '''
+    INSERT_QUERY = '''
+    INSERT INTO Link (redirect,src,dest) SELECT true,?,id FROM Page WHERE title=?
     '''
 
-    INCREMENT=100
+    INCREMENT=1_000
     start = 0
     end = INCREMENT
+    successes=0
+    fails=0
     while True:
-        cur.execute(query, (start,end))
+        print(f'\rsuccesses: {successes:_}, fails: {fails:_}', end="")
+        cur.execute(SEARCH_QUERY, (start,end))
         rows = cur.fetchall()
         for row in rows:
-            print(row)
+            id = row[0] # src
+            redirect = row[1] # dest
+            try:
+                cur.execute(INSERT_QUERY, (id, redirect))
+                successes+=1
+            except mariadb.IntegrityError:
+                fails+=1
 
+        con.commit()
 
         start+=INCREMENT
         end+=INCREMENT
 
 
-    for row in rows:
-        print(row)
 
     con.commit()
     print()

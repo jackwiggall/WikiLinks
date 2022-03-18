@@ -24,7 +24,8 @@ SEPERATOR="<!!>"
 # 27_500_000
 # 20_500_000
 # 2_000_000
-skip=60_000_000
+# 7_000_000
+skip=67_000_000
 def main():
 
     # create relationships
