@@ -1,17 +1,26 @@
 version: "3.9"
 services:
+  mariadb:
+    image: mariadb:10
+    restart: always
+    user: 108 # preserve /var/lib/mysql permissions on host machine
+    volumes:
+      - /var/lib/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306" # open port for development
+    environment:
+      - MARIADB_ROOT_PASSWORD=admin
+
   server: # back-end nodejs api
     build: ./server
     restart: always
     depends_on:
-      - redis
-    network_mode: host
+      - mariadb
 
   client: # front-end
     build: ./client
     restart: always
-    # ports:
-    #   - "55533:80"  ## forward port 80 on docker to 55533 on local machine
+    ports:
+      - "55533:80"  ## forward port 80 on docker to 55533 on local machine
     depends_on:
       - server
-    network_mode: host
