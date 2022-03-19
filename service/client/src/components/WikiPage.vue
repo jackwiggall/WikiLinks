@@ -1,13 +1,11 @@
 <template>
-  <ul id="page">
-    {{title}}
-    {{url}}
+  <ul id="page" class="bg-white">
+    <a href="{{url}}">{{title}}</a>
   </ul>
 </template>
 
 <style scoped>
 #page {
-  background: #ECE4B7;
   
 }
 </style>

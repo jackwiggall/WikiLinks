@@ -1,11 +1,11 @@
 <template>
-  <div id="path">
+  <div id="path" class="p-3 mt-5 mt-5 bg-light rounded">
     <h1>WikiPath</h1>
       <li v-for="(page, key) in path" :key="key">
-
           <WikiPage :title=page.title :url=page.url />
-
       </li>
+    {{steps}}
+    {{queryTime}}
   </div>
 
 </template>
@@ -13,15 +13,12 @@
 
 <style scoped>
 #path {
-  background: #E7BB40;
-  padding: 12px;
+  padding: 1%;
 }
 li{
-
-list-style-type: none;
-  padding: 10px;
+  list-style-type: none;
+  padding: 1%;
 }
-
 </style>
 
 <script>
@@ -31,7 +28,9 @@ import WikiPage from './WikiPage.vue'
 export default {
   name: 'WikiPath',
   props: [
-    'path',
+      'path',
+      'steps',
+      'queryTime',
   ],
   components: {
     WikiPage

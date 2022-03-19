@@ -1,13 +1,22 @@
 <template>
-  <div id="app">
-    <div class="body">
-      <h1>WIkiLinks</h1>
+  <div id="app" class="bg-dark">
+      <div class="body">
+          <div class="p-3 mb-2 bg-info text-white">
+            <img src="../html/logo.png" alt="WikiLinks" title="WikiLinks" />
+          </div>	 <!--Banner-->
 
-      <InputSrcDest @submit="findPath" />
-      <WikiPath :path="path" :queryTime="queryTime" :steps="steps"/>
-    </div>
-    <footer>
-      <p>made by: Elliot, Michael, Jack, Nicole, Bijoy</p>
+          <InputSrcDest @submit="findPath" style="margin:3%;" /> <!--Input-->
+          <WikiPath :path="path" :queryTime="queryTime" :steps="steps" style="margin:3%;" /> <!--Output-->
+      </div>
+    <footer class="bg-info">
+      <ul> <!--Credits-->
+        <li>Made by:</li>
+        <li>Elliot Scott</li> 
+        <li>Michael Matthew</li>
+        <li>Jack Wiggall</li> 
+        <li>Nicole Jackson</li>
+        <li>Bijoy Shah</li>
+      </ul>
     </footer>
   </div>
 </template>
@@ -15,36 +24,30 @@
 <style>
   *{
     margin: 0;
-    background: #E4CC8A;
     font-family: Georgia, serif;
     font-weight: lighter;
+  }
+  img {
+    height: auto;
+    width: 25%
+  }
+  footer li{
+    display: inline;
+    margin-right: 11%;
+  }
+  footer ul {
+    width: 100%;
   }
 </style>
 
 <style scoped>
-  p{
-    padding:40px;
-  }
   footer{
     position:absolute;
     bottom:0;
     width: 100%;
-
-
-    background: #E7BB40;
-    padding: 50px;
-    padding-top: 100px;
-  }
-  h1{
-    margin: 4px;
-    padding-left: 10px;
-    padding-top:10px;
-    padding-bottom: 30px;
-    background: #E7BB40;
+    padding: 1%;
   }
   .body {
-    background:#E4CC8A;
-    padding: 12px;
     margin: 0;
   }
 </style>
