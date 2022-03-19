@@ -1,14 +1,14 @@
 <template>
-  <div id="inputSrcDest">
+  <div id="inputSrcDest" class="p-4 mt-5 bg-light rounded" >
     <div id="inputSrc">
-      src
-      <input v-model="src" type="text" style="background: #E7BB40;">
-    </div>
+      <p>src</p>
+      <input v-model="src" type="text" class="bg-white">
+    </div> <!--424px misalign, media query needed?-->
     <div id="inputDest">
-      dest
-      <input v-model="dest" type="text" style="background: #E7BB40;">
+      <p>dest</p>
+      <input v-model="dest" type="text" class="bg-white">
     </div>
-    <input type="submit" @click="submit(src, dest)" style="background: #E7BB40;">
+    <input type="submit" @click="submit(src, dest)" class="bg-white">
   </div>
   </template>
 
@@ -17,21 +17,22 @@
     font-family: Georgia, serif;
     font-weight: lighter;
   }
-  #inputSrc{
-    padding-right: 50px;
+  #inputSrc, #inputDest{
+    margin-right: 2%;
   }
-  #inputDest{
-    padding-right: 50px;
+  #inputSrcDest p {
+    display: inline;
+    margin-right: 2%;
   }
-
+  input[type=text] {
+    width: 70%; 
+  }
   #inputSrcDest {
-    background: #E4CC8A;
     display: flex;
     justify-content: center;
     font-family: Georgia, serif;
     font-weight: lighter;
     font-size: 20px;
-    padding: 40px;
   }
 </style>
 
