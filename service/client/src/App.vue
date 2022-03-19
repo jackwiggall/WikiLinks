@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="bg-dark">
+  <div id="app">
       <div class="body">
           <div class="p-3 mb-2 bg-info text-white">
             <img src="../html/logo.png" alt="WikiLinks" title="WikiLinks" />
@@ -26,6 +26,9 @@
     margin: 0;
     font-family: Georgia, serif;
     font-weight: lighter;
+  }
+  html {
+      background-color: #383c44;
   }
   img {
     height: auto;
