@@ -1,21 +1,23 @@
 version: "3.9"
 services:
-  mariadb:
-    image: mariadb:10
-    restart: always
-    user: 108 # preserve /var/lib/mysql permissions on host machine
-    volumes:
-      - /var/lib/mysql:/var/lib/mysql
-    ports:
-      - "3306:3306" # open port for development
-    environment:
-      - MARIADB_ROOT_PASSWORD=admin
-
   server: # back-end nodejs api
     build: ./server
     restart: always
+    links:
+      - mariadb
     depends_on:
       - mariadb
+
+  mariadb:
+    image: mariadb:10
+    restart: always
+    user: "108:108" # preserve /var/lib/mysql permissions on host machine
+    ports:
+      - "3306:3306"
+    volumes:
+      - /var/lib/mysql:/var/lib/mysql
+    environment:
+      - MARIADB_RANDOM_ROOT_PASSWORD=true
 
   client: # front-end
     build: ./client
