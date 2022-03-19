@@ -19,5 +19,5 @@ CREATE TABLE Link (
 );
 
 
-CREATE USER wiki@localhost identified by 'L1nKz';
-GRANT SELECT,INSERT,UPDATE,DELETE on wikilinks.* TO wiki@localhost;
+CREATE USER 'wiki'@'%' identified by 'L1nKz';
+GRANT SELECT,INSERT,UPDATE,DELETE on wikilinks.* TO 'wiki'@'%';

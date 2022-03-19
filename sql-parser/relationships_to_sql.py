@@ -16,7 +16,7 @@ con = mariadb.connect(
 
 cur = con.cursor()
 
-BUFFER_FILE="/ramdisk/relationships.gz"
+BUFFER_FILE="/data/wikipedia/relationships.gz"
 SEPERATOR="<!!>"
 
 
@@ -25,11 +25,13 @@ SEPERATOR="<!!>"
 # 20_500_000
 # 2_000_000
 # 7_000_000
-skip=67_000_000
+# 3_500_000
+# 39_500_000
+# 4_000_000
+skip=114_000_000
 def main():
 
     # create relationships
-    print()
     print(f'creating relationships')
     with gzip.open(BUFFER_FILE, "rb") as f:
         query = '''
@@ -53,7 +55,7 @@ def main():
             except:
                 pass
             if (iterations % 1_000 == 0):
-                print(f'\rsuccesses {successes:_}, fails {fails:_}', end="")
+                print(f'\r{iterations:_}: successes {successes:_}, fails {fails:_}', end="")
                 con.commit()
             try:
                 cur.execute(query, (src,srcCap, dest,destCap))
