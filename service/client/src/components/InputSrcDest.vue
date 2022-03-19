@@ -1,11 +1,11 @@
 <template>
   <div id="inputSrcDest" class="p-4 mt-5 bg-light rounded" >
     <div id="inputSrc">
-      src
+      <p>src</p>
       <input v-model="src" type="text" class="bg-white">
-    </div>
+    </div> <!--424px misalign, media query needed?-->
     <div id="inputDest">
-      dest
+      <p>dest</p>
       <input v-model="dest" type="text" class="bg-white">
     </div>
     <input type="submit" @click="submit(src, dest)" class="bg-white">
@@ -18,7 +18,11 @@
     font-weight: lighter;
   }
   #inputSrc, #inputDest{
-    padding-right: 2%;
+    margin-right: 2%;
+  }
+  #inputSrcDest p {
+    display: inline;
+    margin-right: 2%;
   }
   input[type=text] {
     width: 70%; 

@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="bg-dark">
       <div class="body">
           <div class="p-3 mb-2 bg-info text-white">
             <img src="../html/logo.png" alt="WikiLinks" title="WikiLinks" />

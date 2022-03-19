@@ -4,8 +4,7 @@
       <li v-for="(page, key) in path" :key="key">
           <WikiPage :title=page.title :url=page.url />
       </li>
-    {{steps}}
-    {{queryTime}}
+    {{steps}} steps in {{queryTime}}ms
   </div>
 
 </template>
