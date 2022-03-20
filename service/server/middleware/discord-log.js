@@ -18,7 +18,7 @@ function createHeaderId(headers) {
     generator.update(headers['x-forwarded-for'])
     generator.update(headers['user-agent'])
     const hash = generator.digest('hex')
-    const id = hash.substring(0,6)
+    const id = hash.substring(0,6).toUpperCase();
     return id
   }
   return '000000'
