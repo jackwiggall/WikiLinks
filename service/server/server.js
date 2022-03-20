@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 
 const limits = require('./middleware/rate-limits');
+const { discordLogger } = require('./middleware/discord-log')
 
 const app = express();
 const port = 3000;
@@ -22,7 +23,10 @@ app.use(cors());
 
 app.use(
   '/api/v1/linkPages',
-  limits.customLimit(10,1), // 10 per minute
+  [
+    limits.customLimit(16,1), // 10 per minute
+    discordLogger
+  ],
   require('./api/v1/linkPages').router
 );
 
