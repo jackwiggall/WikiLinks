@@ -1,31 +1,44 @@
 <template>
-  <div id="inputSrcDest" class="p-4 mt-5 bg-light rounded" >
-    <div id="inputSrc">
-      <p>src</p>
-      <input v-model="src" type="text" class="bg-white">
-    </div> <!--424px misalign, media query needed?-->
-    <div id="inputDest">
-      <p>dest</p>
-      <input v-model="dest" type="text" class="bg-white">
-    </div>
-    <input type="submit" @click="submit(src, dest)" class="bg-white">
+  <div id="inputSrcDest" class="p-4 mt-3 bg-light rounded container">
+    <dir class="row">
+      <div id="inputSrc" class="form-group col-lg">
+        <label>Start Article</label>
+        <input
+          v-model="src"
+          @keyup.enter="submit(src, dest)"
+          placeholder="Univerity Of Dundee"
+          type="text"
+          class="form-control"
+        >
+      </div>
+      <div id="inputDest" class="container col-lg">
+        <label>End Article</label>
+        <input
+          v-model="dest"
+          @keyup.enter="submit(src, dest)"
+          placeholder="Linux"
+          type="text"
+          class="form-control"
+        >
+      </div>
+      <div id="submit" container="col-lg btn-block">
+        <button type="submit" @click="submit(src, dest)" class="btn btn-primary btn-lg mt-2 ml-4">Submit Query</button>
+      </div>
+    </dir>
   </div>
-  </template>
+</template>
 
 <style scoped>
   *{
     font-family: Georgia, serif;
     font-weight: lighter;
   }
-  #inputSrc, #inputDest{
-    margin-right: 2%;
-  }
-  #inputSrcDest p {
+  p {
     display: inline;
-    margin-right: 2%;
+    margin-right: 5px;
   }
   input[type=text] {
-    width: 70%; 
+    width: 300px; 
   }
   #inputSrcDest {
     display: flex;
@@ -33,6 +46,11 @@
     font-family: Georgia, serif;
     font-weight: lighter;
     font-size: 20px;
+  }
+  #submit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
   }
 </style>
 
@@ -44,7 +62,8 @@ export default {
   ],
   methods: {
     submit: function(src, dest) {
-      this.$emit('submit', src, dest)
+      if (src && dest)
+        this.$emit('submit', src, dest)
     }
   },
   data() {

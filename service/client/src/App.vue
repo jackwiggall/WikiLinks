@@ -1,22 +1,25 @@
 <template>
   <div id="app" class="bg-dark">
       <div class="body">
-          <div class="p-3 mb-2 bg-info text-white">
-            <img src="../html/logo.png" alt="WikiLinks" title="WikiLinks" />
-          </div>	 <!--Banner-->
+          <div class="p-2 bg-info text-center">
+            <h1>WikiLinks</h1>
+          </div>
 
-          <InputSrcDest @submit="findPath" style="margin:3%;" /> <!--Input-->
-          <WikiPath :path="path" :queryTime="queryTime" :steps="steps" style="margin:3%;" /> <!--Output-->
+          <InputSrcDest @submit="findPath"/> <!--Input-->
+
+          <ErrorMessage v-if="showErrorMessage" :message="errorMessage"/>
+          <WikiPath v-if="showPath" :path="path" :queryTime="queryTime" :steps="steps"/> <!--Output-->
+
+          <div v-if="showSpinner" class="text-center">
+            <div id="spinner" class="spinner-border m-5 text-info text-center" role="status">
+            </div>
+
+          </div>
+
+
       </div>
-    <footer class="bg-info">
-      <ul> <!--Credits-->
-        <li>Made by:</li>
-        <li>Elliot Scott</li> 
-        <li>Michael Matthew</li>
-        <li>Jack Wiggall</li> 
-        <li>Nicole Jackson</li>
-        <li>Bijoy Shah</li>
-      </ul>
+    <footer class="bg-info text-center">
+        <span>Made by: Elliot Scott, Michael Matthew, Jack Wiggall, Nicole Jackson, Bijoy Shah</span>
     </footer>
   </div>
 </template>
@@ -27,86 +30,89 @@
     font-family: Georgia, serif;
     font-weight: lighter;
   }
-  html {
-      background-color: #383c44;
-  }
   img {
     height: auto;
     width: 25%
   }
-  footer li{
-    display: inline;
-    margin-right: 11%;
-  }
-  footer ul {
-    width: 100%;
-  }
 </style>
 
 <style scoped>
-  footer{
-    position:absolute;
-    bottom:0;
+  footer {
+    position: fixed;
+    bottom: 0;
     width: 100%;
-    padding: 1%;
+    padding: 20px;
   }
-  .body {
-    margin: 0;
+  #spinner {
+    width: 30vh;
+    height: 30vh;
+    font-size: 50px;
   }
 </style>
 
 <script>
 import WikiPath from './components/WikiPath.vue'
 import InputSrcDest from './components/InputSrcDest.vue'
+import ErrorMessage from './components/ErrorMessage.vue'
+
+
 import axios from 'axios'
 
-import { API_LINK_PAGES_DEV } from './api_config.js'
+import { API_LINK_PAGES } from './api_config.js'
 
 var path = [];
 var queryTime = 0;
 var steps = 0;
 
-var errDestNotFound = false
-var errSrcNotFound = false
-var errServerError = false
-
-function resetErrors() {
-  errDestNotFound = false
-  errSrcNotFound = false
-  errServerError = false
-}
+var showPath = false
+var showErrorMessage = false
+var errorMessage = ""
+var showSpinner = false
 
 export default {
   name: 'App',
   components: {
     WikiPath,
-    InputSrcDest
+    InputSrcDest,
+    ErrorMessage
   },
   methods: {
     findPath: function(src, dest) {
-      resetErrors(); // clear the errors as new submit
-      axios.post(API_LINK_PAGES_DEV, {src: src, dest: dest})
+      this.showErrorMessage = false // clear the errors as new submit
+      this.showPath = false
+      this.showSpinner = true // LOADING...
+      axios.post(API_LINK_PAGES, {src: src, dest: dest})
       .then((res) => {
+        this.showSpinner = false // LOADED
         const json = res.data;
         if (json.success) {
           // this.path is the variable above 'export default'
           this.path = json.path;
           this.queryTime = json.queryTime;
+          this.steps = json.steps;
+          this.showPath = true;
         } else {
           // pass to catch(err) function below
           throw {response: res}
         }
       })
       .catch((err) => {
+        this.showSpinner = false // LOADED
+        this.showErrorMessage = true; // display error message
         const json = err.response.data;
         if (json && json.success == false) { // error response data
-          if (json.message === 'wikipedia title not found') { // title not found
-            if (json.notFoundField === 'src')
-              errSrcNotFound = true;
-            else
-              errDestNotFound = true;
+          if (json.message === 'Wikipedia title not found') { // title not found
+            if (json.notFoundField === 'src') {
+              this.errorMessage = `The Wikipedia article "${src}" is not currently indexed in our database`
+            } else {
+              this.errorMessage = `The Wikipedia article "${dest}" is not currently indexed in our database`
+            }
+          } else if (json.message === "Search exhausted") {
+            this.errorMessage = "No path found or our database is incomplete (probably the latter)"
           } else if (err.response.status === 500) { // server error
-            errServerError = true;
+            this.errorMessage = "Server error :(";
+          } else {
+            this.errorMessage = "Error encountered, message: "+json.message
           }
         }
       })
@@ -117,9 +123,10 @@ export default {
       path: path,
       queryTime: queryTime,
       steps: steps,
-      errDestNotFound: errDestNotFound,
-      errSrcNotFound: errSrcNotFound,
-      errServerError: errServerError
+      showPath: showPath,
+      showErrorMessage: showErrorMessage,
+      errorMessage: errorMessage,
+      showSpinner: showSpinner
     }
   }
 }

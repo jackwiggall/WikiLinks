@@ -1,13 +1,10 @@
 <template>
-  <ul id="page" class="bg-white">
-    <a href="{{url}}">{{title}}</a>
-  </ul>
+  <div class="">
+    {{index}} - <a :href="url">{{title}}</a>
+  </div>
 </template>
 
 <style scoped>
-#page {
-  
-}
 </style>
 
 <script>
@@ -15,7 +12,8 @@ export default {
   name: 'WikiPage',
   props: [
     'title',
-    'url'
+    'url',
+    'index'
   ]
 }
 </script>
