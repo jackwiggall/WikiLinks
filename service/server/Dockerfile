@@ -14,5 +14,6 @@ COPY . /usr/src/app
 
 EXPOSE 3000
 
-USER node # lower permission
+# lower permission
+USER node
 CMD ["node", "server.js"]
