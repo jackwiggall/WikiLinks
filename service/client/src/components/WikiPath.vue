@@ -2,7 +2,7 @@
   <div class="p-3 mt-2 bg-light rounded container">
     <span>
       Path found in {{info.queryTime}}ms, with a minimum of {{steps}} step{{steps > 1 ? 's' : '' }} to reach the destination
-      (expanded: {{info.expandedNodes}}, visited: {{info.visitedNodes}})
+      (expanded nodes: {{info.expandedNodes}}, visited nodes: {{info.visitedNodes}})
     </span>
       <div v-for="(page,index) in path" :key="page.title">
         <WikiPage :title="page.title" :url="page.url" :index="index" />
