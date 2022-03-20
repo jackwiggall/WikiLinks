@@ -7,7 +7,7 @@ exports.customLimit = function(max, window) {
     max: max,
     message: {
       success: false,
-      message: `api limit reached for this function, ${max} requests per ${window} minutes`,
+      message: `api limit reached for this function, ${max} requests per ${window} minute${window == 1 ? '' : 's'}`,
       rate: {
         window: window * 60 * 1000,
         max: max
