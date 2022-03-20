@@ -1,8 +1,3 @@
 service/server/node_modules
 service/client/node_modules
-service/client/.vs/ProjectSettings.json
-service/client/.vs/slnx.sqlite
-service/client/html/.vs/ProjectSettings.json
-service/client/html/.vs/slnx.sqlite
-service/client/html/.vs/VSWorkspaceState.json
-.gitignore
+service/server/discord-bot/*
