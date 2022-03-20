@@ -9,11 +9,10 @@ ENV NODE_ENV production
 COPY package*.json ./
 RUN npm install
 
-
 # copy actual app (js code)
 COPY . /usr/src/app
 
 EXPOSE 3000
 
-USER node
+USER node # lower permission
 CMD ["node", "server.js"]

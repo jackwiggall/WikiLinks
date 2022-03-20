@@ -6,6 +6,7 @@ WORKDIR /usr/src/app
 # for caching
 COPY package*.json /usr/src/app/
 RUN npm install
+
 # install vue for building the acutal app
 RUN npm install @vue/cli
 
