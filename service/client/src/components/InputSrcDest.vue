@@ -16,7 +16,7 @@
         <input
           v-model="dest"
           @keyup.enter="submit(src, dest)"
-          placeholder="Linux"
+          placeholder="Aberdeen"
           type="text"
           class="form-control"
         >
