@@ -1,12 +1,12 @@
 const { pool } = require.main.require('./pool.js')
 
 
-
-
 async function findShortestPath(src, dest, callback) {
   //// start query time ////
   const queryStartTime = Date.now()
   
+  var expandedNodes = 0;
+
   // get database ids for titles
   var srcRow = await poolQuery(`SELECT id FROM Page WHERE title=?`, src)
   var destRow = await poolQuery(`SELECT id FROM Page WHERE title=?`, dest)
@@ -19,6 +19,7 @@ async function findShortestPath(src, dest, callback) {
   src_queue.push(srcId)
   dest_queue.push(destId)
 
+
   // visited map for backtracking steps to make path
   var src_visited = new Map() // [title, parent]
   var dest_visited = new Map() // [title, parent]
@@ -28,6 +29,7 @@ async function findShortestPath(src, dest, callback) {
   // iterate until intersection found or search exhausted
   var intersection = undefined
   while (intersection == undefined && src_queue.length != 0 && dest_queue.length != 0) {
+    expandedNodes+=2 // 2 nodes are expanded each iteration
     // forward bfs and backwards bfs *should* be the exact same but just with a few variable changes
     //// forward bfs ////
     const src_focus = src_queue.shift() // pop
@@ -60,10 +62,14 @@ async function findShortestPath(src, dest, callback) {
 
   //// end query time ////
   const queryEndTime = Date.now()
-  const queryTime = queryEndTime - queryStartTime
 
+  const info = {
+    expandedNodes: expandedNodes,
+    visitedNodes: src_visited.size + dest_visited.size,
+    queryTime: queryEndTime - queryStartTime
+  }
   // return
-  callback(path, queryTime)
+  callback(path, info)
 }
 exports.findShortestPath = findShortestPath
 

@@ -8,7 +8,7 @@
           <InputSrcDest @submit="findPath"/> <!--Input-->
 
           <ErrorMessage v-if="showErrorMessage" :message="errorMessage"/>
-          <WikiPath v-if="showPath" :path="path" :queryTime="queryTime" :steps="steps"/> <!--Output-->
+          <WikiPath v-if="showPath" :path="path" :info="info" :steps="steps"/> <!--Output-->
 
           <div v-if="showSpinner" class="text-center">
             <div id="spinner" class="spinner-border m-5 text-info text-center" role="status">
@@ -61,7 +61,7 @@ import axios from 'axios'
 import { API_LINK_PAGES } from './api_config.js'
 
 var path = [];
-var queryTime = 0;
+var info = {};
 var steps = 0;
 
 var showPath = false
@@ -88,7 +88,7 @@ export default {
         if (json.success) {
           // this.path is the variable above 'export default'
           this.path = json.path;
-          this.queryTime = json.queryTime;
+          this.info = json.info;
           this.steps = json.steps;
           this.showPath = true;
         } else {
@@ -121,7 +121,7 @@ export default {
   data() {
     return {
       path: path,
-      queryTime: queryTime,
+      info: info,
       steps: steps,
       showPath: showPath,
       showErrorMessage: showErrorMessage,
